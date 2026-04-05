@@ -7,13 +7,15 @@ int        CO = 1; // commence à 1 comme dans le cours
 
 // emit — ajoute une instruction dans le P-code
 void emit(Instruction inst, int arg) {
+    //on verrifie qu'on depasse pas taille max instruction
     if (CO >= MAX_PCODE) {
         fprintf(stderr, "Erreur : P-code plein\n");
         return;
     }
+    //on remplit case courante avec l'instrcution et son argument
     Pcode[CO].inst = inst;
     Pcode[CO].arg  = arg;
-    CO++;
+    CO++; //on pointe vers la prochaine case libre
 }
 
 // get_CO — retourne l'adresse courante
@@ -26,7 +28,7 @@ void patch(int addr, int val) {
     Pcode[addr].arg = val;
 }
 
-// afficher_pcode — affiche toutes les instructions (debug)
+// afficher_pcode — affiche toutes les instructions
 void afficher_pcode(void) {
     // Noms des instructions pour l'affichage
     const char *noms[] = {
@@ -36,8 +38,6 @@ void afficher_pcode(void) {
         "SUP", "SUPE", "INF", "INFE", "EG", "DIFF", "STOP"
     };
 
-    printf("\n--- P-code generé ---\n");
     for (int i = 1; i < CO; i++)
         printf("%3d  %-6s  %d\n", i, noms[Pcode[i].inst], Pcode[i].arg);
-    printf("---------------------\n");
 }

@@ -30,7 +30,7 @@ typedef enum {
     STOP    // arrêt
 } Instruction;
 
-// Une case du P-code  = une instruction + son argument
+// Une case du P-code  = une instruction + son argument ( ex LDA 3 veut dire charger l'adresse "3" )
 typedef struct {
     Instruction inst;
     int         arg;
