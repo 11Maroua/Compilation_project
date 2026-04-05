@@ -11,17 +11,17 @@ Grammaire G0 (écrite à la main)
         │
         ▼
 ┌─────────────────────┐        ┌─────────────────────┐
-│   MÉTA-COMPILATEUR  │        │     COMPILATEUR      │
-│                     │        │                      │
-│  ScanG0             │        │  ScanGPL             │
-│  AnalyseG0   ───────┼──────► │  AnalyseGPL          │
-│  ActionG0           │        │  ActionGPL           │
-│                     │        │        │             │
-│  → construit        │        │        ▼             │
-│    l'arbre A[6..n]  │        │   P-code généré      │
-└─────────────────────┘        │        │             │
-                               │        ▼             │
-                               │   Exec + Interpret   │
+│   MÉTA-COMPILATEUR  │        │     COMPILATEUR     │
+│                     │        │                     │
+│  ScanG0             │        │  ScanGPL            │
+│  AnalyseG0   ───────┼──────► │  AnalyseGPL         │
+│  ActionG0           │        │  ActionGPL          │
+│                     │        │        │            │
+│  → construit        │        │        ▼            │
+│    l'arbre A[6..n]  │        │   P-code généré     │
+└─────────────────────┘        │        │            │
+                               │        ▼            │
+                               │   Exec + Interpret  │
                                └─────────────────────┘
 ```
 
