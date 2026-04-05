@@ -1,14 +1,14 @@
 #ifndef SCAN_GO_H
 #define SCAN_GO_H
 
-/*  Codes des tokens de G0 */
+// Codes des tokens de G0 
 
-#define TOK_ARROW    256   /* →                              */
-#define TOK_IDNTER   257   /* identifiant non-terminal       */
-#define TOK_ELTER    258   /* terminal littéral 'xxx'        */
-#define TOK_EOF      259   /* fin de fichier                 */
+#define TOK_ARROW    256   // ->                              
+#define TOK_IDNTER   257   // identifiant non-terminal       
+#define TOK_ELTER    258   // terminal littéral 'xxx'        
+#define TOK_EOF      259   // fin de fichier                 
 
-/*  Token courant */
+//  Token courant 
 
 extern int   token_courant;   // code du token lu            
 extern char  token_nom[256];  // nom si IDNTER               
