@@ -11,17 +11,17 @@ Grammaire G0 (écrite à la main)
         │
         ▼
 ┌─────────────────────┐        ┌─────────────────────┐
-│   MÉTA-COMPILATEUR  │        │     COMPILATEUR     │
-│                     │        │                     │
-│  ScanG0             │        │  ScanGPL            │
-│  AnalyseG0   ───────┼──────► │  AnalyseGPL         │
-│  ActionG0           │        │  ActionGPL          │
-│                     │        │        │            │
-│  → construit        │        │        ▼            │
-│    l'arbre A[6..n]  │        │   P-code généré     │
-└─────────────────────┘        │        │            │
-                               │        ▼            │
-                               │   Exec + Interpret  │
+│   MÉTA-COMPILATEUR  │        │     COMPILATEUR      │
+│                     │        │                      │
+│  ScanGO             │        │  ScanGPL             │
+│  AnalyseGO   ───────┼──────► │  AnalyseGPL          │
+│  ActionGO           │        │  ActionGPL           │
+│                     │        │        │             │
+│  → construit        │        │        ▼             │
+│    l'arbre A[6..n]  │        │   P-code généré      │
+└─────────────────────┘        │        │             │
+                               │        ▼             │
+                               │   Exec + Interpret   │
                                └─────────────────────┘
 ```
 
@@ -42,7 +42,7 @@ le code. Toute grammaire GPL doit respecter ces 5 règles pour être acceptée.
 ### Les 5 règles de G0
 
 ```
-(1) S → [N. '→' .E. ';']. ','
+(1) S → [N. '->' .E. ';']. ','
 (2) N → 'IDNTER'
 (3) E → T. ['+'.T]
 (4) T → F. ['.'.F]
@@ -51,20 +51,20 @@ le code. Toute grammaire GPL doit respecter ces 5 règles pour être acceptée.
 
 ### Notation utilisée dans G0
 
-| Notation | Signification                              | Exemple                          |
-|----------|--------------------------------------------|----------------------------------|
-| `[X]`    | X répété 0 ou plusieurs fois (étoile `*`)  | `['+'.T]` = zéro ou plusieurs +T |
-| `(X)`    | X optionnel (0 ou 1 fois)                  | `('Else'.Inst)` = Else optionnel |
-| `.`      | Concaténation — "suivi de"                 | `N.'→'` = N puis →              |
-| `+`      | Union — "ou"                               | `'a'+'b'` = a ou b              |
-| `'x'`    | Terminal littéral — le caractère x lui-même| `';'` = point-virgule           |
-| `IDNTER` | Identifiant non-terminal (S, N, E, T, F…)  | N, E, Inst…                     |
-| `ELTER`  | Terminal littéral entre apostrophes        | `'if'`, `'then'`                |
+| Notation | Signification                              | Exemple                           |
+|----------|--------------------------------------------|-----------------------------------|
+| `[X]`    | X répété 0 ou plusieurs fois (étoile `*`)  | `['+'.T]` = zéro ou plusieurs +T  |
+| `(X)`    | X optionnel (0 ou 1 fois)                  | `('Else'.Inst)` = Else optionnel  |
+| `.`      | Concaténation — "suivi de"                 | `N.'->'` = N puis →               |
+| `+`      | Union — "ou"                               | `'a'+'b'` = a ou b                |
+| `'x'`    | Terminal littéral — le caractère x lui-même| `';'` = point-virgule             |
+| `IDNTER` | Identifiant non-terminal (S, N, E, T, F…)  | N, E, Inst…                       |
+| `ELTER`  | Terminal littéral entre apostrophes        | `'if'`, `'then'`                  |
 
 ### Ce que chaque règle signifie en français
 
 **Règle 1 — S** : une grammaire valide est une liste de règles séparées par des
-virgules. Chaque règle a la forme `NomNonTerminal → Expression ;`
+virgules. Chaque règle a la forme `NomNonTerminal -> Expression ;`
 
 **Règle 2 — N** : un non-terminal est un identifiant (un nom comme S, Inst, Expr…)
 
@@ -91,26 +91,26 @@ PTR A[MAX_RULES];
 
 C'est le tableau central de tout le projet.
 
-| Cases    | Contenu                      | Rempli par                  |
-|----------|------------------------------|-----------------------------|
-| A[1]     | Arbre de la règle S de G0    | GenForetG0 (à la main)      |
-| A[2]     | Arbre de la règle N de G0    | GenForetG0 (à la main)      |
-| A[3]     | Arbre de la règle E de G0    | GenForetG0 (à la main)      |
-| A[4]     | Arbre de la règle T de G0    | GenForetG0 (à la main)      |
-| A[5]     | Arbre de la règle F de G0    | GenForetG0 (à la main)      |
-| A[6..n]  | Arbres des règles de la GPL  | ActionG0 automatiquement    |
+| Cases    | Contenu                      | Rempli par                   |
+|----------|------------------------------|------------------------------|
+| A[1]     | Arbre de la règle S de G0    | GenForetGO (à la main)       |
+| A[2]     | Arbre de la règle N de G0    | GenForetGO (à la main)       |
+| A[3]     | Arbre de la règle E de G0    | GenForetGO (à la main)       |
+| A[4]     | Arbre de la règle T de G0    | GenForetGO (à la main)       |
+| A[5]     | Arbre de la règle F de G0    | GenForetGO (à la main)       |
+| A[6..n]  | Arbres des règles de la GPL  | ActionGO automatiquement     |
 
 ### Les types de nœuds
 
 Chaque nœud de l'arbre a un type parmi 5 :
 
-| Type    | Symbole G0 | Fils           | Rôle                    |
-|---------|-----------|----------------|-------------------------|
-| `Conc`  | `.`       | gauche + droit | "A suivi de B"          |
-| `Union` | `+`       | gauche + droit | "A ou B"                |
-| `Star`  | `[X]`     | store          | "répéter 0 ou n fois"   |
-| `Un`    | `(X)`     | un             | "optionnel, 0 ou 1 fois"|
-| `Atom`  | feuille   | aucun          | terminal ou non-terminal|
+| Type    | Symbole G0 | Fils           | Rôle                     |
+|---------|-----------|----------------|--------------------------|
+| `Conc`  | `.`       | gauche + droit | "A suivi de B"           |
+| `Union` | `+`       | gauche + droit | "A ou B"                 |
+| `Star`  | `[X]`     | store          | "répéter 0 ou n fois"    |
+| `Un`    | `(X)`     | un             | "optionnel, 0 ou 1 fois" |
+| `Atom`  | feuille   | aucun          | terminal ou non-terminal |
 
 ### Le nœud Atom en détail
 
@@ -120,6 +120,7 @@ Un nœud `Atom` est une feuille de l'arbre. Il peut être de deux sortes :
 ```
 cod   = code ASCII du caractère (ex: ';' = 59)
         ou code spécial (TOK_ARROW=256, TOK_IDNTER=257, TOK_ELTER=258)
+val   = chaîne complète si ELTER multi-caractères (ex: "->", "IDNTER")
 act   = numéro d'action sémantique à déclencher (0 = aucune)
 atype = Terminal
 ```
@@ -136,32 +137,33 @@ atype = NonTerminal
 
 ## Les Actions Sémantiques
 
-Quand `AnalyseG0` reconnaît un token qui a un numéro d'action non nul
-(`act != 0`), il appelle `ActionG0(numéro)`. Ces actions construisent
+Quand `AnalyseGO` reconnaît un token qui a un numéro d'action non nul
+(`act != 0`), il appelle `ActionGO(numéro)`. Ces actions construisent
 l'arbre de la GPL dans A[6..n].
 
-Il y a 7 actions au total :
+Il y a 9 actions au total :
 
-| #  | Déclenché quand                     | Ce que ça fait                                              |
-|----|-------------------------------------|-------------------------------------------------------------|
-| 1  | Fin d'une règle (token `;`)         | Raccorde le membre gauche au membre droit. Stocke dans A[index] |
-| 2  | Reconnaissance d'un IDNTER          | Ajoute le nom à la table des symboles                       |
-| 3  | Reconnaissance du `+` (union)       | Crée un nœud Union dans l'arbre en construction             |
-| 4  | Reconnaissance du `.` (concat)      | Crée un nœud Conc dans l'arbre en construction              |
-| 5  | IDNTER ou ELTER dans un facteur     | Crée une feuille Atom                                       |
-| 6  | Crochets `[` et `]`                 | Crée un nœud Star (répétition)                              |
-| 7  | Parenthèses `(` et `)`              | Crée un nœud Un (optionnel)                                 |
+| #  | Déclenché quand                  | Ce que ça fait                                           |
+|----|----------------------------------|----------------------------------------------------------|
+| 1  | Fin d'une règle (token `;`)      | Construit l'arbre complet et le stocke dans A[index]     |
+| 2  | IDNTER (nom de règle)            | Enregistre le nom dans la table des symboles             |
+| 3  | `+` (union)                      | Empile un marqueur d'union                               |
+| 4  | `.` (concat)                     | Empile un marqueur de concaténation                      |
+| 5  | IDNTER ou ELTER dans un facteur  | Crée une feuille Atom et l'empile                        |
+| 6  | `[` (ouverture Star)             | Empile un marqueur NULL de début Star                    |
+| 7  | `(` ou `/` (ouverture Un)        | Empile un marqueur NULL de début Un                      |
+| 8  | `]` (fermeture Star)             | Dépile le contenu, crée GenStar et l'empile              |
+| 9  | `)` ou `/` (fermeture Un)        | Dépile le contenu, crée GenUn et l'empile                |
 
-**Exemple concret** : quand le méta-compilateur lit la GPL `Sp → ['a'].'b',;`
-il reconnaît dans l'ordre :
+**Exemple concret** : quand le méta-compilateur lit `Sp -> ['a'].'b';,`
 
-- `Sp`  → action 2 (ajoute Sp à la table des symboles)
-- `[`   → action 6 (prépare un Star)
-- `'a'` → action 5 (crée un Atom terminal)
-- `]`   → action 6 (ferme le Star)
-- `.`   → action 4 (crée un Conc)
-- `'b'` → action 5 (crée un Atom terminal)
-- `;`   → action 1 (finalise la règle, stocke dans A[6])
+- `Sp`  → action 2 — enregistre "Sp" dans la table des symboles
+- `[`   → action 6 — empile marqueur NULL (début du Star)
+- `'a'` → action 5 — crée Atom('a') et l'empile
+- `]`   → action 8 — dépile Atom('a'), crée Star(Atom('a')), empile
+- `.`   → action 4 — empile marqueur concat (PTR)2
+- `'b'` → action 5 — crée Atom('b') et l'empile
+- `;`   → action 1 — construit Conc(Star('a'), 'b'), stocke dans A[6]
 
 ---
 
@@ -189,65 +191,16 @@ que l'interpréteur exécute ensuite.
 
 ### Instructions disponibles
 
-| Catégorie     | Instructions                                          |
-|---------------|-------------------------------------------------------|
-| Chargement    | `LDA @` (adresse), `LDV val` (valeur), `LDC c` (constante) |
-| Affectation   | `AFF`                                                 |
-| Entrée/Sortie | `RD` (read), `WRTLN` (writeln)                        |
+| Catégorie     | Instructions                                               |
+|---------------|------------------------------------------------------------|
+| Chargement    | `LDA @` (adresse), `LDV val` (valeur), `LDC c` (constante)|
+| Affectation   | `AFF`                                                      |
+| Entrée/Sortie | `RD` (read), `WRTLN` (writeln)                             |
 | Saut          | `JMP @` (inconditionnel), `JIF @` (si faux), `JSR`, `RSR` |
-| Arithmétique  | `ADD`, `MIN`, `MULT`, `DIV`, `NEG`, `INC`, `DEC`     |
-| Logique       | `AND`, `OR`, `NOT`                                    |
-| Comparaison   | `SUP`, `SUPE`, `INF`, `INFE`, `EG`, `DIFF`           |
-| Arrêt         | `STOP`                                                |
-
-### Exemple — programme Som compilé en P-code
-
-Programme source GPL :
-```
-Program Som;
-Var I, S, N : int;
-Debut
-  Read(N);
-  S := 0;
-  I := 1;
-  While I <= N do
-    Debut
-      S := S + I;
-      I := I + 1;
-    Fin
-  WriteLn(S);
-Fin
-```
-
-P-code généré :
-```
-1  LDA 3     → adresse de N
-3  RD        → lit N depuis l'entrée
-4  AFF       → N := valeur lue
-5  LDA 2     → adresse de S
-7  LDC 0     → constante 0
-9  AFF       → S := 0
-10 LDA 1     → adresse de I
-12 LDC 1     → constante 1
-14 AFF       → I := 1
-15 LDV 1     → charge I        ← début du while
-17 LDV 3     → charge N
-19 INFE      → I <= N ?
-20 JIF 38    → si faux sauter à la fin
-22 LDA 2     → S := S + I
-24 LDV 2
-26 LDV 1
-28 ADD
-29 AFF
-30 LDA 1     → I := I + 1
-32 LDV 1
-34 INC
-35 AFF
-36 JMP 15    → retour au while
-38 LDA 2     → WriteLn(S)
-40 WRTLN
-41 STOP
-```
+| Arithmétique  | `ADD`, `MIN`, `MULT`, `DIV`, `NEG`, `INC`, `DEC`          |
+| Logique       | `AND`, `OR`, `NOT`                                         |
+| Comparaison   | `SUP`, `SUPE`, `INF`, `INFE`, `EG`, `DIFF`                |
+| Arrêt         | `STOP`                                                     |
 
 ### Fonctionnement de l'interpréteur
 
@@ -271,20 +224,31 @@ projet-compilo/
 ├── rapport/
 │   └── rapport.pdf
 ├── src/
-│   ├── main.c           ← point d'entrée
-│   ├── tree.h           ← types + prototypes (structures de données)
-│   ├── tree.c           ← GenConc, GenUnion, GenStar, GenUn,
-│   │                       GenAtom, GenForetG0, ImprimArbre
-│   ├── scan_g0.h/.c     ← ScanG0 (analyse lexicale de la GPL)
-│   ├── g0.h/.c          ← AnalyseG0 + ActionG0
-│   ├── scan_gpl.h/.c    ← ScanGPL (analyse lexicale du programme)
-│   ├── gpl.h/.c         ← AnalyseGPL + ActionGPL
-│   ├── pcode.h/.c       ← génération du P-code
-│   └── exec.c           ← Exec + Interpret
-├── tests/
-│   ├── gpl1.txt         ← Sp → ['a'].'b',;
-│   └── prog_somme.txt   ← le programme Som
-└── Makefile
+│   ├── main.c             ← point d'entrée
+│   ├── tree.h / tree.c    ← types, GenXxx, GenForetGO, ImprimArbre
+│   ├── scan_go.h / .c     ← ScanGO (analyse lexicale de la GPL)
+│   ├── analyse_go.h / .c  ← AnalyseGO + ActionGO
+│   ├── scan_gpl.h / .c    ← ScanGPL (analyse lexicale du programme)
+│   ├── analyse_gpl.h / .c ← AnalyseGPL + ActionGPL
+│   ├── pcode.h / .c       ← génération du P-code
+│   ├── exec.h / exec.c    ← Exec + Interpret
+│   └── Makefile
+└── tests/
+    ├── gpl1.txt           ← Sp -> ['a'].'b';,
+    ├── gpl2.txt           ← Sp -> 'a'+'b';,
+    ├── gpl3.txt           ← Sp -> ['a'.'b'];,
+    ├── gpl4.txt           ← Sp -> N.'b';, N -> 'a';,
+    ├── gpl5.txt           ← Sp -> ('a').'b';,
+    ├── gpl6.txt           ← Sp -> N+'b';, N -> 'a'+'c';,
+    ├── gpl7.txt           ← Sp -> [['a'].'b'];,
+    ├── gpl8.txt           ← G0 écrite en GPL (preuve G0 ∈ G0)
+    ├── prog1.txt          ← aab
+    ├── prog2.txt          ← a
+    ├── prog3.txt          ← ababab
+    ├── prog4.txt          ← ab
+    ├── prog5.txt          ← b
+    ├── prog6.txt          ← a
+    └── prog7.txt          ← abb
 ```
 
 ---
@@ -295,9 +259,56 @@ projet-compilo/
 # Compiler tout le projet
 make
 
-# Lancer le méta-compilateur sur une GPL
-./compilo gpl1.txt programme.txt
+# Lancer sur une grammaire GPL et un programme
+./compilo tests/gpl1.txt tests/prog1.txt
+
+# Lancer tous les tests
+make clean && make && \
+./compilo tests/gpl1.txt tests/prog1.txt && \
+./compilo tests/gpl2.txt tests/prog2.txt && \
+./compilo tests/gpl3.txt tests/prog3.txt && \
+./compilo tests/gpl4.txt tests/prog4.txt && \
+./compilo tests/gpl5.txt tests/prog5.txt && \
+./compilo tests/gpl6.txt tests/prog6.txt && \
+./compilo tests/gpl7.txt tests/prog7.txt && \
+./compilo tests/gpl8.txt tests/gpl1.txt
 
 # Nettoyer les fichiers compilés
 make clean
 ```
+
+---
+
+## Format des fichiers GPL
+
+Une grammaire GPL doit respecter le format suivant :
+
+- Chaque règle se termine par `;,`
+- La dernière règle se termine aussi par `;,`
+- Les non-terminaux commencent par une majuscule
+- Les terminaux sont entre apostrophes : `'a'`, `'->'`, `'if'`
+- La flèche s'écrit `->`
+
+Exemple de GPL valide :
+```
+Sp -> N.'b';,
+N -> 'a';,
+```
+
+---
+
+## Preuve que G0 ∈ G0
+
+G0 peut s'écrire elle-même en GPL :
+
+```
+S -> [N.'->' .E. ';'].',';,
+N -> 'IDNTER';,
+E -> T.['+'.T];,
+T -> F.['.'.F];,
+F -> 'IDNTER'+'ELTER'+'('.E.')'+'['.E.']'+'/'.E.'/';,
+```
+
+En lançant `./compilo tests/gpl8.txt tests/gpl1.txt`, le programme
+confirme que `gpl1.txt` est un programme valide selon cette grammaire —
+prouvant ainsi que G0 ∈ G0.
