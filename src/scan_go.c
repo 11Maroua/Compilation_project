@@ -30,6 +30,8 @@ void ScanGO_init(const char *filename) {
         exit(1);
     }
 
+    lire_car(); // lis start symbol
+
 }
 
 

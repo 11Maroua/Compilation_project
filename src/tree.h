@@ -30,7 +30,8 @@ struct Node {
         struct {
             int      cod;    //code ASCII si Terminal, index dans A si NonTerminal 
             int      act;    //numéro d'action sémantique à décelncher (0 = aucune)
-            int      ind;    //index dans A[] si NonTerminal                       
+            int      ind;    //index dans A[] si NonTerminal   
+            char     val[256]; //valeur de l'atom si c'est un terminal (ex: "IDNTER", "ELTER", ou le caractère lui même)                    
             AtomType atype; //terminal ou non-terminal
         } atom;
     };
@@ -59,7 +60,7 @@ PTR GenAtom (int cod, int act, int ind, AtomType atype);
 
 /* Génération de la forêt G0 */
 
-void GenForetG0(void);
+void GenForetGO(void);
 
 /* Impression de l'arbre*/
 

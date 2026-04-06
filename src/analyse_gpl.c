@@ -21,14 +21,14 @@ static int sommet = 0;
 static int chercher_var(const char *nom) {
     for (int i = 0; i < nb_vars; i++)
         if (strcmp(table_vars[i], nom) == 0)
-            return i + 1; // adresses commencent à 1
+            return i + 1;
     return -1;
 }
 
 // Ajoute une variable, retourne son adresse
 static int ajouter_var(const char *nom) {
     strcpy(table_vars[nb_vars++], nom);
-    return nb_vars; // adresse = position dans la table
+    return nb_vars;
 }
 
 // AnalyseGPL
@@ -49,7 +49,7 @@ int AnalyseGPL(PTR pt) {
                 AnalyseGPL_result = AnalyseGPL(pt->uni.right);
             return AnalyseGPL_result;
 
-        // Répéter tant que ça marche
+        // Répéter tant que ca marche
         case Star:
             while (AnalyseGPL(pt->star.store))
                 ;
@@ -63,7 +63,21 @@ int AnalyseGPL(PTR pt) {
         // Feuille
         case Atom:
             if (pt->atom.atype == Terminal) {
-                if (token_gpl_courant == pt->atom.cod) {
+                int match = 0;
+                if (pt->atom.val[0] != '\0') {
+                    // tokens speciaux
+                    if (strcmp(pt->atom.val, "IDNTER") == 0) {
+                        match = (token_gpl_courant == TOK_GPL_IDNTER);
+                    } else if (strcmp(pt->atom.val, "ELTER") == 0) {
+                        match = (token_gpl_courant == TOK_GPL_ENTIER);
+                    } else {
+                        match = (strcmp(pt->atom.val, token_gpl_nom) == 0);
+                    }
+                } else {
+                    // Terminal simple — comparer par code ASCII
+                    match = (token_gpl_courant == pt->atom.cod);
+                }
+                if (match) {
                     AnalyseGPL_result = 1;
                     if (pt->atom.act != 0)
                         ActionGPL(pt->atom.act);
@@ -86,18 +100,16 @@ int AnalyseGPL(PTR pt) {
 void ActionGPL(int act) {
     switch (act) {
 
-        // Déclaration d'une variable — ajouter à la table
-        case 1: {
+        // Déclaration d'une variable
+        case 1:
             ajouter_var(token_gpl_nom);
             break;
-        }
 
-        // Début d'une affectation — empiler l'adresse de la variable
+        // Debut d'une affectation
         case 2: {
             int addr = chercher_var(token_gpl_nom);
             if (addr == -1) {
-                fprintf(stderr, "Erreur : variable '%s' non declaree\n",
-                        token_gpl_nom);
+                fprintf(stderr, "Erreur : variable '%s' non declaree\n", token_gpl_nom);
                 exit(1);
             }
             pile[sommet++] = addr;
@@ -105,17 +117,16 @@ void ActionGPL(int act) {
             break;
         }
 
-        // Fin d'une affectation — générer AFF
+        // Fin d'une affectation
         case 3:
             emit(AFF, 0);
             break;
 
-        // Read — générer LDA + RD + AFF
+        // Read
         case 4: {
             int addr = chercher_var(token_gpl_nom);
             if (addr == -1) {
-                fprintf(stderr, "Erreur : variable '%s' non declaree\n",
-                        token_gpl_nom);
+                fprintf(stderr, "Erreur : variable '%s' non declaree\n", token_gpl_nom);
                 exit(1);
             }
             emit(LDA, addr);
@@ -124,12 +135,11 @@ void ActionGPL(int act) {
             break;
         }
 
-        // Write — générer LDV + WRTLN
+        // Write
         case 5: {
             int addr = chercher_var(token_gpl_nom);
             if (addr == -1) {
-                fprintf(stderr, "Erreur : variable '%s' non declaree\n",
-                        token_gpl_nom);
+                fprintf(stderr, "Erreur : variable '%s' non declaree\n", token_gpl_nom);
                 exit(1);
             }
             emit(LDV, addr);
@@ -137,123 +147,122 @@ void ActionGPL(int act) {
             break;
         }
 
-        // Charger une variable — générer LDV
+        // Charger une variable
         case 6: {
             int addr = chercher_var(token_gpl_nom);
             if (addr == -1) {
-                fprintf(stderr, "Erreur : variable '%s' non declaree\n",
-                        token_gpl_nom);
+                fprintf(stderr, "Erreur : variable '%s' non declaree\n", token_gpl_nom);
                 exit(1);
             }
             emit(LDV, addr);
             break;
         }
 
-        // Charger une constante entière — générer LDC
+        // Charger une constante entiere
         case 7:
             emit(LDC, token_gpl_val);
             break;
 
-        // Opérateur + — générer ADD
+        // Operateur +
         case 8:
             emit(ADD, 0);
             break;
 
-        // Opérateur - — générer MIN
+        // Operateur -
         case 9:
             emit(MIN, 0);
             break;
 
-        // Opérateur * — générer MULT
+        // Operateur *
         case 10:
             emit(MULT, 0);
             break;
 
-        // Opérateur / — générer DIV
+        // Operateur /
         case 11:
             emit(DIV, 0);
             break;
 
-        // Opérateur < — générer INF
+        // Operateur <
         case 12:
             emit(INF, 0);
             break;
 
-        // Opérateur <= — générer INFE
+        // Operateur <=
         case 13:
             emit(INFE, 0);
             break;
 
-        // Opérateur > — générer SUP
+        // Operateur >
         case 14:
             emit(SUP, 0);
             break;
 
-        // Opérateur >= — générer SUPE
+        // Operateur >=
         case 15:
             emit(SUPE, 0);
             break;
 
-        // Opérateur = — générer EG
+        // Operateur =
         case 16:
             emit(EG, 0);
             break;
 
-        // Opérateur <> — générer DIFF
+        // Operateur <>
         case 17:
             emit(DIFF, 0);
             break;
 
-        // Début du While — sauvegarder l'adresse de retour
+        // Debut du While
         case 18:
-            pile[sommet++] = get_CO(); // adresse courante dans Pcode
+            pile[sommet++] = get_CO();
             break;
 
-        // Condition du While — générer JIF (à patcher plus tard)
+        // Condition du While — JIF a patcher
         case 19:
-            emit(JIF, 0);            // 0 sera patché après
-            pile[sommet++] = get_CO() - 1; // adresse du JIF à patcher
+            emit(JIF, 0);
+            pile[sommet++] = get_CO() - 1;
             break;
 
-        // Fin du While — générer JMP retour + patcher le JIF
+        // Fin du While
         case 20: {
-            int addr_jif  = pile[--sommet]; // adresse du JIF
-            int addr_debut = pile[--sommet]; // adresse de début du while
+            int addr_jif   = pile[--sommet];
+            int addr_debut = pile[--sommet];
             emit(JMP, addr_debut);
-            patch(addr_jif, get_CO()); // patcher le JIF avec l'adresse de fin
+            patch(addr_jif, get_CO());
             break;
         }
 
-        // Début du If — générer JIF (à patcher)
+        // Debut du If
         case 21:
             emit(JIF, 0);
-            pile[sommet++] = get_CO() - 1; // adresse du JIF à patcher
+            pile[sommet++] = get_CO() - 1;
             break;
 
-        // Fin du If sans Else — patcher le JIF
+        // Fin du If sans Else
         case 22: {
             int addr_jif = pile[--sommet];
             patch(addr_jif, get_CO());
             break;
         }
 
-        // Début du Else — générer JMP + patcher le JIF du If
+        // Debut du Else
         case 23: {
             int addr_jif = pile[--sommet];
             emit(JMP, 0);
-            pile[sommet++] = get_CO() - 1; // adresse du JMP à patcher
+            pile[sommet++] = get_CO() - 1;
             patch(addr_jif, get_CO());
             break;
         }
 
-        // Fin du Else — patcher le JMP
+        // Fin du Else
         case 24: {
             int addr_jmp = pile[--sommet];
             patch(addr_jmp, get_CO());
             break;
         }
 
-        // Fin du programme — générer STOP
+        // Fin du programme
         case 25:
             emit(STOP, 0);
             break;

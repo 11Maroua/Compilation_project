@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "pcode.h"
+#include "exec.h"
 
 // La pile d'execution et son sommet
 static int Pilex[10000];
@@ -191,7 +192,11 @@ static void Interpret(Case_Pcode x) {
 
 // Exec — boucle principale d'execution du P-code
 void Exec(void) {
-    CO = 1; // on repart du début du P-code
+    CO = 1;
+    if (Pcode[CO].inst == 0 && get_CO() == 1) {
+        printf("Pas de P-code généré\n");
+        return;
+    }
     while (Pcode[CO].inst != STOP) {
         Interpret(Pcode[CO]);
     }

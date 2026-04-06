@@ -15,7 +15,7 @@ extern char  token_nom[256];  // nom si IDNTER
 extern char  token_val[256];  // valeur si ELTER             
 
 /*   Fonctions */
-void ScanGO_init(const char *filename);  // ouvre le fichier 
+void ScanGO_init(const char *filename);  // ouvre le fichier et lis token initial
 void ScanGO(void);                       // lit token suivant 
 void ScanGO_close(void);                 // ferme le fichier  
 
